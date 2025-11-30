@@ -97,46 +97,80 @@ export default function EggyMemeMaker() {
 
   const drawMeme = (canvas: HTMLCanvasElement, meme: Meme): Promise<void> => {
     return new Promise((resolve) => {
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext("2d");
       if (!ctx) {
         resolve();
         return;
       }
 
       const img = new Image();
-      img.crossOrigin = 'anonymous';
-      
+      img.crossOrigin = "anonymous";
+
+      const wrapText = (text: string, maxWidth: number): string[] => {
+        const words = text.split(" ");
+        const lines: string[] = [];
+        let currentLine = "";
+
+        for (const word of words) {
+          const testLine = currentLine ? currentLine + " " + word : word;
+          const testWidth = ctx.measureText(testLine).width;
+
+          if (testWidth > maxWidth) {
+            lines.push(currentLine);
+            currentLine = word;
+          } else {
+            currentLine = testLine;
+          }
+        }
+        if (currentLine) lines.push(currentLine);
+        return lines;
+      };
+
       img.onload = () => {
         canvas.width = img.width;
         canvas.height = img.height;
         ctx.drawImage(img, 0, 0);
-        
-        ctx.fillStyle = 'white';
-        ctx.strokeStyle = 'black';
+
+        ctx.fillStyle = "white";
+        ctx.strokeStyle = "black";
         ctx.lineWidth = Math.max(2, meme.fontSize / 20);
         ctx.font = `bold ${meme.fontSize}px Impact, sans-serif`;
-        ctx.textAlign = 'center';
-        
+        ctx.textAlign = "center";
+
+        const maxTextWidth = canvas.width * 0.9;
+
         if (meme.topText) {
-          const topY = meme.fontSize + 10;
-          ctx.strokeText(meme.topText.toUpperCase(), canvas.width / 2, topY);
-          ctx.fillText(meme.topText.toUpperCase(), canvas.width / 2, topY);
+          const lines = wrapText(meme.topText.toUpperCase(), maxTextWidth);
+          const lineHeight = meme.fontSize + 5;
+
+          lines.forEach((line, i) => {
+            const y = (i + 1) * lineHeight;
+            ctx.strokeText(line, canvas.width / 2, y);
+            ctx.fillText(line, canvas.width / 2, y);
+          });
         }
-        
+
         if (meme.bottomText) {
-          const bottomY = canvas.height - 20;
-          ctx.strokeText(meme.bottomText.toUpperCase(), canvas.width / 2, bottomY);
-          ctx.fillText(meme.bottomText.toUpperCase(), canvas.width / 2, bottomY);
+          const lines = wrapText(meme.bottomText.toUpperCase(), maxTextWidth);
+          const lineHeight = meme.fontSize + 5;
+
+          lines.reverse();
+
+          lines.forEach((line, i) => {
+            const y = canvas.height - i * lineHeight - 20;
+            ctx.strokeText(line, canvas.width / 2, y);
+            ctx.fillText(line, canvas.width / 2, y);
+          });
         }
-        
+
         resolve();
       };
 
       img.onerror = () => {
-        console.error('Failed to load image:', meme.imageUrl);
+        console.error("Failed to load image:", meme.imageUrl);
         resolve();
       };
-      
+
       img.src = meme.imageUrl;
     });
   };
