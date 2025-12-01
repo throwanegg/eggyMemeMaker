@@ -377,6 +377,13 @@ export default function EggyMemeMaker() {
             </div>
           </div>
         )}
+
+        <footer className="w-full border-t border-gray-300 mt-12 py-4">
+          <div className="max-w-6xl mx-auto px-4 flex justify-between text-sm text-gray-600">
+            <span>u/throwanegg8</span>
+            <span>Credit to u/the_codewarrior for the images</span>
+          </div>
+        </footer>
       </div>
 
       {memes.map((meme, i) => (
